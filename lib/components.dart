@@ -127,9 +127,9 @@ DialogBox(BuildContext context, String title) {
               borderRadius: BorderRadius.circular(10.0),
               side: BorderSide(width: 2.0, color: Colors.black),
             ),
-            title: OpenSans(
-              text: title,
-              size: 20.0,
+            title: Text(
+              title,
+              style: TextStyle(fontSize: 20),
             ),
             actions: [
               MaterialButton(
@@ -139,10 +139,9 @@ DialogBox(BuildContext context, String title) {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0)),
                 color: Colors.black,
-                child: OpenSans(
-                  text: "Okay",
-                  size: 20.0,
-                  color: Colors.white,
+                child: Text(
+                  'Okay',
+                  style: TextStyle(fontSize: 20, color: Colors.white),
                 ),
               )
             ],

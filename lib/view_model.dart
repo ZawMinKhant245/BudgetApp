@@ -1,69 +1,57 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:budget_app/components.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
-
-import 'components.dart';
 
 final viewModel =
     ChangeNotifierProvider.autoDispose<ViewModel>((ref) => ViewModel());
 
 class ViewModel extends ChangeNotifier {
   final _auth = FirebaseAuth.instance;
-  CollectionReference userCollection =
-      FirebaseFirestore.instance.collection('users');
-  bool isSignedIn = false;
-  bool isObscure = true;
+  bool isSignIn = false;
+  bool isObsure = true;
   var logger = Logger();
-  final GoogleSignIn _google = GoogleSignIn.instance; // v 7+ singleton
-  List expensesName = [];
-  List expensesAmount = [];
-  List incomesName = [];
-  List incomesAmount = [];
 
-  //Check if Signed In
-  Future<void> isLoggedIn() async {
+  //CHeck if Sign In
+
+  Future<void> isLogin() async {
     await _auth.authStateChanges().listen((User? user) {
       if (user == null) {
-        isSignedIn = false;
+        isSignIn = false;
       } else {
-        isSignedIn = true;
+        isSignIn = true;
       }
     });
     notifyListeners();
   }
 
-  //--------------------------------------------------------------------
-  ///  GOOGLE-SIGN-IN  – MOBILE  (Android / iOS)  – v 7 API
-//--------------------------------------------------------------------
-  Future<void> signInWithGoogleMobile(BuildContext context) async {
-    final GoogleSignInAccount account = await _google
-        .authenticate(scopeHint: const ['email']) // replaces signIn()
-        .onError((error, stackTrace) {
-      logger.d(error);
-      DialogBox(
-        context,
-        error.toString().replaceAll(RegExp(r'\[.*?\]'), ''),
-      );
-      throw error!;
-    });
+  toggleObscure() {
+    isObsure = !isObsure;
+    notifyListeners();
+  }
 
-    // authentication is now *synchronous* and returns only idToken
-    final String? idToken = account.authentication.idToken;
-
-    final credential = GoogleAuthProvider.credential(idToken: idToken);
-
+  //Auth
+  Future<void> createUserWithEmailAndPassword(
+      BuildContext context, String email, String password) async {
     await _auth
-        .signInWithCredential(credential)
-        .then(
-          (value) => logger.e('Signed in successfully $value'),
-    )
+        .createUserWithEmailAndPassword(email: email, password: password)
+        .then((onValue) => logger.d('Registration Successfully'))
         .onError((error, stackTrace) {
-      DialogBox(context, error.toString().replaceAll(RegExp(r'\[.*?\]'), ''));
-      logger.d(error);
+      logger.d('Registration Error $error');
+      DialogBox(context, error.toString().replaceAll(RegExp('\\[.*?\\]'), ''));
     });
   }
 
+  Future<void> signInWithEmailAndPassword(
+      BuildContext context, String email, String password) async {
+    _auth
+        .signInWithEmailAndPassword(email: email, password: password)
+        .then((onValue) => logger.d('Login Successfully'))
+        .onError((error, stackTrace) {
+      logger.d('Login Error $error');
+      DialogBox(context, error.toString().replaceAll(RegExp('\\[.*?\\]'), ''));
+    });
+  }
 }
