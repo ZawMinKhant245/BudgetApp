@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -132,17 +133,23 @@ class LoginViewMobile extends HookConsumerWidget {
                           borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
-                  SizedBox(height: 30),
-                  //Google SignIn
-                  SignInButton(
-                    buttonType: ButtonType.google,
-                    btnColor: Colors.black,
-                    btnTextColor: Colors.white,
-                    buttonSize: ButtonSize.medium,
-                    onPressed: () async {},
-                  )
                 ],
               ),
+              SizedBox(height: 30),
+              //Google SignIn
+              SignInButton(
+                buttonType: ButtonType.google,
+                btnColor: Colors.black,
+                btnTextColor: Colors.white,
+                buttonSize: ButtonSize.medium,
+                onPressed: () async {
+                  if (kIsWeb) {
+                    await viewModelProvider.sigInInWithGoogleWeb(context);
+                  } else {
+                    await viewModelProvider.signInWithGoogleMobile(context);
+                  }
+                },
+              )
             ],
           ),
         ),

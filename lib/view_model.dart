@@ -1,6 +1,7 @@
 import 'package:budget_app/components.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
@@ -13,6 +14,11 @@ class ViewModel extends ChangeNotifier {
   bool isSignIn = false;
   bool isObsure = true;
   var logger = Logger();
+
+  List expenseName = [];
+  List expenseAmount = [];
+  List incomeName = [];
+  List incomeAmount = [];
 
   //CHeck if Sign In
 
@@ -46,12 +52,41 @@ class ViewModel extends ChangeNotifier {
 
   Future<void> signInWithEmailAndPassword(
       BuildContext context, String email, String password) async {
-    _auth
+    await _auth
         .signInWithEmailAndPassword(email: email, password: password)
         .then((onValue) => logger.d('Login Successfully'))
         .onError((error, stackTrace) {
       logger.d('Login Error $error');
       DialogBox(context, error.toString().replaceAll(RegExp('\\[.*?\\]'), ''));
     });
+  }
+
+  Future<void> sigInInWithGoogleWeb(BuildContext context) async {
+    GoogleAuthProvider googleAuthProvider = GoogleAuthProvider();
+    await _auth.signInWithPopup(googleAuthProvider).onError(
+        (error, stackTrace) => DialogBox(
+            context, error.toString().replaceAll(RegExp('\\[.*?\\]'), '')));
+    logger
+        .d("Current User is not empty = ${_auth.currentUser!.uid.isNotEmpty}");
+  }
+
+  Future<void> signInWithGoogleMobile(BuildContext context) async {
+    final GoogleSignInAccount? googleSignInAccount = await GoogleSignIn()
+        .signIn()
+        .onError((error, stackTrace) => DialogBox(
+            context, error.toString().replaceAll(RegExp('\\[.*?\\]'), '')));
+    final GoogleSignInAuthentication? googleAuth =
+        await googleSignInAccount?.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken, idToken: googleAuth?.idToken);
+    await _auth.signInWithCredential(credential).then((value) {
+      logger.d('Google Sign in successfully');
+    }).onError((error, stackTrace) => DialogBox(
+        context, error.toString().replaceAll(RegExp('\\[.*?\\]'), '')));
+  }
+
+  Future<void> logOut() async {
+    await _auth.signOut();
   }
 }
